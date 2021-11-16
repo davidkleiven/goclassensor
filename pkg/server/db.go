@@ -2,6 +2,7 @@ package server
 
 import (
 	"database/sql"
+	"flag"
 	"log"
 	"os"
 
@@ -11,6 +12,11 @@ import (
 func dbName() string {
 	env := os.Getenv("CLAS_SENSOR_ENV")
 	workdir := os.Getenv("CLAS_SENSOR_WORKDIR")
+
+	// Check if we are running in unittest
+	if flag.Lookup("test.v") != nil {
+		return "file::memory:?cache=shared"
+	}
 
 	if workdir == "" {
 		workdir = "."
@@ -30,21 +36,35 @@ func connect() *sql.DB {
 		log.Printf("Can not connect to DB: %s\n%v\n", dbName(), err)
 		return nil
 	}
-	log.Printf("Connected to DB")
 	return db
 }
 
-func initDb() {
-	db := connect()
-	if db == nil {
-		return
-	}
-
-	query := "CREATE TABLE IF NOT EXISTS temperatures (Timestamp TEXT, DataSource TEXT, OutdoorTemp REAL, IndoorTemp REAL)"
-	_, err := db.Query(query)
-
+func initDb(db *sql.DB) {
+	query := "CREATE TABLE IF NOT EXISTS temperatures (ID INTEGER PRIMARY KEY NOT NULL, Timestamp TEXT, DataSource TEXT, OutdoorTemp REAL, IndoorTemp REAL)"
+	_, err := db.Exec(query)
 	if err != nil {
 		log.Printf("Error when executing\n%s\n%v\n", query, err)
 	}
-	db.Close()
+
+}
+
+func insert(db *sql.DB, td TemperatureData) {
+	query := "INSERT INTO temperatures (Timestamp, DataSource, OutdoorTemp, IndoorTemp) VALUES (?, ?, ?, ?)"
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		log.Printf("Error during prepare query\n%s\n", query)
+		return
+	}
+
+	_, err = stmt.Exec(td.Timestamp, td.DataSource, td.OutdoorTemp, td.IndoorTemp)
+
+	if err != nil {
+		log.Printf("Could not executre statememt %s\n", query)
+	}
+}
+
+func query(db *sql.DB, query string) *sql.Rows {
+	stmt, _ := db.Prepare(query)
+	rows, _ := stmt.Query()
+	return rows
 }
