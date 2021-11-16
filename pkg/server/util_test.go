@@ -2,7 +2,7 @@ package server
 
 import "testing"
 
-func TestGetTemperatureData(t *testing.T) {
+func TestgetTemperatureData(t *testing.T) {
 	for i, test := range []struct {
 		jsonStr []byte
 		want    TemperatureData
@@ -10,7 +10,6 @@ func TestGetTemperatureData(t *testing.T) {
 		{
 			jsonStr: []byte("{\"DataSource\": \"Something\", \"OutdoorTemp\": 4.0, \"IndoorTemp\": 20.0}"),
 			want: TemperatureData{
-				DataSource:  "Something",
 				OutdoorTemp: 4.0,
 				IndoorTemp:  20.0,
 			},
@@ -18,12 +17,17 @@ func TestGetTemperatureData(t *testing.T) {
 		{
 			jsonStr: []byte("{\"DataSource\": \"Something\", \"OutdoorTemp\": 4.0}"),
 			want: TemperatureData{
-				DataSource:  "Something",
+				OutdoorTemp: 4.0,
+			},
+		},
+		{
+			jsonStr: []byte("{\"RandomField\": \"Something\", \"OutdoorTemp\": 4.0}"),
+			want: TemperatureData{
 				OutdoorTemp: 4.0,
 			},
 		},
 	} {
-		data := GetTemperatureData(test.jsonStr)
+		data := getTemperatureData(test.jsonStr)
 
 		if !data.DataAreEqual(test.want) {
 			t.Errorf("Test #%d: Got\n%v\nWanted\n%v\n", i, data, test.want)

@@ -11,12 +11,12 @@ func TestDetectTestContext(t *testing.T) {
 	}
 }
 
-func TestInitDB(t *testing.T) {
-	db := connect()
+func TestInitDb(t *testing.T) {
+	db := Connect()
 	defer db.Close()
 
 	for i := 0; i < 2; i++ {
-		initDb(db)
+		InitDb(db)
 		res := query(db, "SELECT count(*) FROM sqlite_master")
 		var num int
 		for res.Next() {
@@ -31,13 +31,12 @@ func TestInitDB(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
-	db := connect()
+	db := Connect()
 	defer db.Close()
-	initDb(db)
+	InitDb(db)
 
 	data := TemperatureData{
 		Timestamp:   "21:04",
-		DataSource:  "unittest",
 		OutdoorTemp: 4.0,
 		IndoorTemp:  22.0,
 	}

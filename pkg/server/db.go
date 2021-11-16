@@ -28,9 +28,10 @@ func dbName() string {
 	return workdir + "/" + "clas_sensor.db"
 }
 
-func connect() *sql.DB {
-	log.Printf("Connecting to DB")
-	db, err := sql.Open("sqlite3", dbName())
+func Connect() *sql.DB {
+	name := dbName()
+	log.Printf("Connecting to DB %s\n", name)
+	db, err := sql.Open("sqlite3", name)
 
 	if err != nil {
 		log.Printf("Can not connect to DB: %s\n%v\n", dbName(), err)
@@ -39,8 +40,8 @@ func connect() *sql.DB {
 	return db
 }
 
-func initDb(db *sql.DB) {
-	query := "CREATE TABLE IF NOT EXISTS temperatures (ID INTEGER PRIMARY KEY NOT NULL, Timestamp TEXT, DataSource TEXT, OutdoorTemp REAL, IndoorTemp REAL)"
+func InitDb(db *sql.DB) {
+	query := "CREATE TABLE IF NOT EXISTS temperatures (ID INTEGER PRIMARY KEY NOT NULL, Timestamp TEXT, OutdoorTemp REAL, IndoorTemp REAL)"
 	_, err := db.Exec(query)
 	if err != nil {
 		log.Printf("Error when executing\n%s\n%v\n", query, err)
@@ -49,14 +50,14 @@ func initDb(db *sql.DB) {
 }
 
 func insert(db *sql.DB, td TemperatureData) {
-	query := "INSERT INTO temperatures (Timestamp, DataSource, OutdoorTemp, IndoorTemp) VALUES (?, ?, ?, ?)"
+	query := "INSERT INTO temperatures (Timestamp, OutdoorTemp, IndoorTemp) VALUES (?, ?, ?)"
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		log.Printf("Error during prepare query\n%s\n", query)
 		return
 	}
 
-	_, err = stmt.Exec(td.Timestamp, td.DataSource, td.OutdoorTemp, td.IndoorTemp)
+	_, err = stmt.Exec(td.Timestamp, td.OutdoorTemp, td.IndoorTemp)
 
 	if err != nil {
 		log.Printf("Could not executre statememt %s\n", query)
