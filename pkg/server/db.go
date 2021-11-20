@@ -41,7 +41,7 @@ func Connect() *sql.DB {
 }
 
 func InitDb(db *sql.DB) {
-	query := "CREATE TABLE IF NOT EXISTS temperatures (ID INTEGER PRIMARY KEY NOT NULL, Timestamp TEXT, OutdoorTemp REAL, IndoorTemp REAL)"
+	query := "CREATE TABLE IF NOT EXISTS temperatures (ID INTEGER PRIMARY KEY NOT NULL, Timestamp TEXT, OutdoorTemp REAL, IndoorTemp REAL, Forecast REAL)"
 	_, err := db.Exec(query)
 	if err != nil {
 		log.Printf("Error when executing\n%s\n%v\n", query, err)
@@ -50,14 +50,14 @@ func InitDb(db *sql.DB) {
 }
 
 func insert(db *sql.DB, td TemperatureData) {
-	query := "INSERT INTO temperatures (Timestamp, OutdoorTemp, IndoorTemp) VALUES (?, ?, ?)"
+	query := "INSERT INTO temperatures (Timestamp, OutdoorTemp, IndoorTemp, Forecast) VALUES (?, ?, ?, ?)"
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		log.Printf("Error during prepare query\n%s\n", query)
 		return
 	}
 
-	_, err = stmt.Exec(td.Timestamp, td.OutdoorTemp, td.IndoorTemp)
+	_, err = stmt.Exec(td.Timestamp, td.OutdoorTemp, td.IndoorTemp, td.Forecast)
 
 	if err != nil {
 		log.Printf("Could not executre statememt %s\n", query)

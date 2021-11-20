@@ -11,6 +11,7 @@ type TemperatureData struct {
 	Timestamp   string
 	OutdoorTemp float64
 	IndoorTemp  float64
+	Forecast    float64
 }
 
 // DataAreEqual check if all data fields (e.g. not Timestamp) in two structures match
@@ -29,5 +30,11 @@ func getTemperatureData(jsonData []byte) TemperatureData {
 }
 
 func jsonDataOk(jsonData []byte) bool {
-	return bytes.Contains(jsonData, []byte("OutdoorTemp")) && bytes.Contains(jsonData, []byte("IndoorTemp"))
+	expectKeys := []string{"OutdoorTemp", "IndoorTemp", "Forecast"}
+	for _, key := range expectKeys {
+		if !bytes.Contains(jsonData, []byte(key)) {
+			return false
+		}
+	}
+	return true
 }
